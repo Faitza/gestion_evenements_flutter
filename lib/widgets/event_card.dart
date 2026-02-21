@@ -1,135 +1,101 @@
 // IMPORTATIONS
-import 'package:flutter/material.dart';
-import '../models/event.dart';
-import '../data/mock_data.dart';
+import 'package:flutter/material.dart'; // Importe la bibliothèque Material pour les widgets de base.
+import '../models/event.dart'; // Importe le modèle de données pour un objet Event.
+import '../data/mock_data.dart'; // Importe les données simulées, notamment les couleurs.
 
 // ========================================================
-// CARTE POUR AFFICHER UN ÉVÉNEMENT (VERSION AVEC IMAGE)
+// CARTE POUR AFFICHER UN ÉVÉNEMENT (VERSION LISTE)
 // ========================================================
+// Définit un widget sans état pour afficher les informations d'un événement sous forme de carte.
 class EventCard extends StatelessWidget {
+  // L'objet événement à afficher dans la carte.
   final Event event;
+  // Une fonction de rappel (callback) optionnelle à exécuter lors d'un appui sur la carte.
   final VoidCallback? onTap;
+  // Un booléen pour indiquer si la vue est celle d'un administrateur.
   final bool isAdmin;
 
+  // Constructeur du widget.
   const EventCard({
-    Key? key,
-    required this.event,
-    this.onTap,
-    this.isAdmin = false,
+    Key? key, // Clé optionnelle pour le widget.
+    required this.event, // L'événement est requis.
+    this.onTap, // Le callback onTap est optionnel.
+    this.isAdmin = false, // Par défaut, la vue n'est pas celle d'un administrateur.
   }) : super(key: key);
 
   @override
+  // Méthode qui construit l'interface utilisateur du widget.
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+    // Retourne un widget Card, qui est un panneau Material avec une légère élévation.
+    return Card(
+      // Marge horizontale et verticale autour de la carte.
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      // Définit la forme de la carte avec des coins arrondis.
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      // L'élévation (ombre) de la carte.
+      elevation: 2,
+      // Le contenu de la carte est un ListTile, qui est une ligne de hauteur fixe.
+      child: ListTile(
+        // Le widget affiché au début (à gauche) du ListTile.
+        leading: Container(
+          width: 50, // Largeur du conteneur.
+          height: 50, // Hauteur du conteneur.
+          // Décoration du conteneur (couleur de fond, coins arrondis).
+          decoration: BoxDecoration(
+            color: AppColors.mauveClair.withOpacity(0.3), // Couleur mauve clair semi-transparente.
+            borderRadius: BorderRadius.circular(8), // Coins arrondis.
+          ),
+          // L'icône affichée à l'intérieur du conteneur.
+          child: const Icon(
+            Icons.event, // Icône d'événement standard.
+            color: AppColors.mauve, // Couleur de l'icône.
+            size: 30, // Taille de l'icône.
+          ),
         ),
-        elevation: 3,
-        clipBehavior: Clip.antiAlias,
-        child: Column(
+        // Le widget principal du ListTile, généralement un texte.
+        title: Text(
+          event.title, // Le titre de l'événement.
+          // Style du texte du titre.
+          style: const TextStyle(
+            fontWeight: FontWeight.bold, // Police en gras.
+            fontSize: 16, // Taille de la police.
+          ),
+        ),
+        // Le widget affiché sous le titre.
+        subtitle: Column(
+          // Aligne les enfants au début (à gauche) de la colonne.
           crossAxisAlignment: CrossAxisAlignment.start,
+          // La liste des widgets enfants de la colonne.
           children: [
-            // ==================================================
-            // IMAGE EVENEMENT (si genyen)
-            // ==================================================
-            if (event.imageUrl != null && event.imageUrl!.isNotEmpty)
-              SizedBox(
-                height: 120,
-                width: double.infinity,
-                child: Image.network(
-                  event.imageUrl!,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return _iconPlaceholder();
-                  },
-                ),
-              )
-            else
-              _iconPlaceholder(),
-
-            // ==================================================
-            // CONTENU TEXTE
-            // ==================================================
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                event.title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
+            // Texte affichant la date et le lieu de l'événement.
+            Text(
+              '${event.date} - ${event.location}',
+              style: const TextStyle(fontSize: 14), // Style du texte.
             ),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Row(
-                children: [
-                  const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      event.date,
-                      style: const TextStyle(fontSize: 12),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
+            // Un petit espace vertical.
+            const SizedBox(height: 4),
+            // Texte affichant la description de l'événement.
+            Text(
+              event.description,
+              style: const TextStyle(fontSize: 12), // Style du texte.
+              maxLines: 1, // Limite le texte à une seule ligne.
+              overflow: TextOverflow.ellipsis, // Affiche "..." si le texte dépasse.
             ),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              child: Row(
-                children: [
-                  const Icon(Icons.location_on, size: 14, color: Colors.grey),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      event.location,
-                      style: const TextStyle(fontSize: 12),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const Spacer(),
-
-            // ==================================================
-            // ICON EDIT SI ADMIN
-            // ==================================================
-            if (isAdmin)
-              const Padding(
-                padding: EdgeInsets.all(6),
-                child: Align(
-                  alignment: Alignment.bottomRight,
-                  child: Icon(Icons.edit, color: AppColors.mauve, size: 18),
-                ),
-              ),
           ],
         ),
-      ),
-    );
-  }
-
-  // ==================================================
-  // PLACEHOLDER SI PA GEN IMAGE
-  // ==================================================
-  Widget _iconPlaceholder() {
-    return Container(
-      height: 120,
-      width: double.infinity,
-      color: AppColors.mauveClair.withOpacity(0.3),
-      child: const Icon(
-        Icons.event,
-        color: AppColors.mauve,
-        size: 40,
+        // Le widget affiché à la fin (à droite) du ListTile.
+        trailing: isAdmin
+            // Si l'utilisateur est un administrateur, affiche une icône de modification.
+            ? const Icon(
+          Icons.edit,
+          color: AppColors.mauve,
+        )
+        // Sinon, n'affiche rien.
+            : null,
+        // La fonction à appeler lorsque l'utilisateur appuie sur le ListTile.
+        onTap: onTap,
       ),
     );
   }
